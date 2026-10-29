@@ -1,0 +1,70 @@
+---
+layout: runbook
+title: '#4471 · what the reports show'
+owner: pkalin-lpp
+status: open
+reviewed: 2026-10-29
+signature: 'v1.eyJzdWIiOiI0OTkyIiwiYXVkIjoiY2hhbGxlbmdlOndoYXQtaXQtc2hvd3MiLCJpYXQiOjE3OTMyOTExMDYsImV4cCI6MTc5MzM3NzUwNn0.PMS6RWlrQz0RBvBHLHrT1HpmoVmq46CSsG2CTngAl1Y'
+---
+
+<script>
+  import ProblemTable from '#lib/kb/ProblemTable.svelte';
+  import Callout from '#lib/kb/Callout.svelte';
+  import RenderStamp from '#lib/kb/RenderStamp.svelte';
+
+  const repo = 'https://github.com/pkalin-lpp/mega-s01e03-what-it-shows/issues';
+</script>
+
+The [#4471 page](/kb/incidents/4471) calls every report one bug: the parser reads dates month
+first, and a fix is queued. The reports say more. They were merged by subject line
+([decision 0001](/kb/decisions/0001-dedupe-by-subject)), and a subject line cannot tell one bug
+from another.
+
+<Callout kind="warn">
+#4471 is not one issue. Each problem below has its own ticket. The parser fix queued for #4471
+does not fix the others.
+</Callout>
+
+## The problems
+
+<ProblemTable ticket={4471} tickets={{ parser: repo + '/1', hint: repo + '/2', 'one-day': repo + '/3' }} />
+
+### `parser`: day-first dates read month first
+
+The shared parser reads every date month first. A tenant that writes the day first gets day and
+month swapped: "7 April" comes back as "4 July". It reaches us through every channel and every
+tenant on file. This is the fix already queued under #4471.
+
+### `hint`: booking-v3 tells day-first tenants to type the month first
+
+booking-v3 prints `MM/DD/YYYY` under its date field. The tenant's people type what the hint
+tells them, month first, and the form reads it the tenant's way, day first. Only bookings made
+through the booking-v3 form are hit. The parser fix does not change it: the hint has to follow
+the tenant's locale.
+
+### `one-day`: dates move by one day
+
+No swap here. A date moves by one day, and where the person is can change which day they get:
+"Client in Lisbon got Tuesday. Client in Toronto got Monday." That points at a date with no time
+being converted between time zones. Neither the parser fix nor the hint fix touches it.
+
+## How each report was placed
+
+1. One id, one report. The ticket system exports pages that overlap, so a repeated row counts
+   once.
+2. A report the desk read as a one-day move (desk notes) is `one-day`. Swapping day and month
+   never moves a date by one day.
+3. Every other report goes by its tenant, never by its intake tag: a day-first tenant's report
+   through booking-v3's form is `hint`, any other report from a day-first tenant is `parser`.
+4. A report from a tenant not on file stays `unplaced` until someone reads it.
+
+The intake tag is a guess from the reporter's browser language. The table shows it next to each
+problem so you can see how often the guess is wrong.
+
+## Lessons
+
+- A subject line says how a report feels, not what caused it. Count by cause, and split a ticket
+  when its reports disagree.
+- The tenant decides the cause. The reporter's browser does not.
+
+<RenderStamp {signature} />
