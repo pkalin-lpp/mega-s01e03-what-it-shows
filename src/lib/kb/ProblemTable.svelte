@@ -11,7 +11,6 @@
   const rows = $derived((reports as Report[]).filter((r) => r.mergedInto === ticket));
   const merged = $derived(uniqueById(rows));
   const groups = $derived(groupByProblem(merged, tenantOf, notes.oneDayMove));
-  const placed = $derived(groups.reduce((n, g) => n + g.reports.length, 0));
   const counts = (n: Record<string, number>) =>
     Object.entries(n)
       .sort((a, b) => b[1] - a[1])
@@ -25,10 +24,7 @@
   <strong>{groups.length}</strong>
   {groups.length === 1 ? 'problem' : 'problems'}
 </p>
-<p class="note">
-  {rows.length} rows in the export; {rows.length - merged.length} of them repeat a report id and count once.
-  {placed === merged.length ? 'Every report is placed in exactly one problem.' : `${merged.length - placed} reports are not placed.`}
-</p>
+<p class="note">{rows.length} rows in the export; {rows.length - merged.length} of them repeat a report id and count once.</p>
 
 <table>
   <thead>
@@ -49,6 +45,16 @@
     {/each}
   </tbody>
 </table>
+
+{#each groups as g (g.problem)}
+  {#if g.filedUnder.length}
+    <p class="note">
+      The {g.reports.length} <code>{g.problem}</code> reports are also counted under
+      {#each g.filedUnder as cause, i (cause)}{i ? ', ' : ''}<code>{cause}</code>{/each}: the desk's view files them
+      by tenant and counts them there.
+    </p>
+  {/if}
+{/each}
 
 <style>
   .sum { font-size: 1.1rem; margin-bottom: 0; }

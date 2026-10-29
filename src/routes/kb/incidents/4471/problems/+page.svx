@@ -52,10 +52,12 @@ being converted between time zones. Neither the parser fix nor the hint fix touc
 
 1. One id, one report. The ticket system exports pages that overlap, so a repeated row counts
    once.
-2. A report the desk read as a one-day move (desk notes) is `one-day`. Swapping day and month
-   never moves a date by one day.
-3. Every other report goes by its tenant, never by its intake tag: a day-first tenant's report
-   through booking-v3's form is `hint`, any other report from a day-first tenant is `parser`.
+2. Every report goes by its tenant, never by its intake tag: a day-first tenant's report through
+   booking-v3's form is `hint`, any other report from a day-first tenant is `parser`. These are
+   the desk's own counts, from its cause table.
+3. A report the desk read as a one-day move (desk notes) also makes the `one-day` row. Swapping day
+   and month never moves a date by one day. The desk's view still counts it under its tenant's
+   cause, so those reports count twice: once where they are filed, once as what they are.
 4. A report from a tenant not on file stays `unplaced` until someone reads it.
 
 The intake tag is a guess from the reporter's browser language. The table shows it next to each
